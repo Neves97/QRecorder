@@ -1,0 +1,102 @@
+using SilentTrayRecorder;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+
+class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        // passo zero, edite o arquivo .csproj e mude o OutputType para WinExe, isso é importante para não abrir a janela de console junto com o ícone
+
+        using var recorder = new AudioManager();
+
+        //criar menu
+        ContextMenuStrip MainManu = new ContextMenuStrip();
+
+        ToolStripMenuItem deviceMenu = new ToolStripMenuItem("Dispositivos");
+
+        List<AudioDevice> devices = recorder.ListarMicrofones();
+
+        List<ToolStripMenuItem> listDevices = new List<ToolStripMenuItem>();
+        foreach (var device in devices)
+        {
+
+            var deviceItem = new ToolStripMenuItem(device.Name, null, (sender, eventArgs) =>
+            {
+                AudioManager.deviceID = device.Id;
+
+                foreach (ToolStripMenuItem item in deviceMenu.DropDownItems)
+                {
+                    item.Checked = false;
+                }
+                var clickedItem = (ToolStripMenuItem)sender; //melhorar
+                clickedItem.Checked = true;
+
+
+            });
+            deviceItem.Tag = device.Id;
+            listDevices.Add(deviceItem);
+
+        }
+
+        foreach (var item in listDevices)
+        {
+            deviceMenu.DropDownItems.Add(item);
+        }
+
+        // Sintaxe: new ToolStripMenuItem("Texto que aparece", Ícone, Método_Que_Será_Executado)
+        ToolStripMenuItem exitMenuItem = new ToolStripMenuItem("Sair do Programa", null, (sender, eventArgs) =>
+            {
+                Application.Exit();
+            });
+
+        ToolStripMenuItem recordMenuItem = new ToolStripMenuItem("Iniciar Gravação", null, (sender, eventArgs) =>
+        {
+            var menuItem = sender as ToolStripMenuItem;
+            if (menuItem == null) return;
+
+            // Deixa a classe decidir o que fazer com base no estado interno dela
+            if (!recorder.IsRecording)
+            {
+                recorder.Start();
+                menuItem.Text = "Parar Gravação";
+            }
+            else
+            {
+                recorder.Stop();
+                menuItem.Text = "Iniciar Gravação";
+            }
+        });
+
+        //associar
+        MainManu.Items.Add(recordMenuItem);
+        MainManu.Items.Add(new ToolStripSeparator());
+        MainManu.Items.Add(exitMenuItem);
+        MainManu.Items.Add(deviceMenu);
+
+
+        //  criar icone e assosciar os menus
+        NotifyIcon trayIcon = new NotifyIcon();
+
+        trayIcon.Icon = SystemIcons.WinLogo;
+        trayIcon.Text = "AudioDriver";
+        trayIcon.Visible = true;
+        trayIcon.ContextMenuStrip = MainManu;
+
+
+        // 2. Dispara o balão
+        trayIcon.ShowBalloonTip(3000, "Status", "Iniciando", ToolTipIcon.Info);
+
+
+        // 3. OBRIGATÓRIO: Isola a thread e impede o programa de fechar
+        Application.Run();
+
+        // Garante que o ícone na bandeja seja limpo ao fechar
+        trayIcon.Dispose();
+    }
+}
