@@ -1,4 +1,5 @@
 using NAudio.Wave;
+using NAudio.Lame; // 1. IMPORTAR O PACOTE LAME
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ namespace SilentTrayRecorder
     public class AudioManager : IDisposable
     {
         private WaveInEvent _waveIn;
-        private WaveFileWriter? _writer;
+        private LameMP3FileWriter? _writer;
         public static int deviceID = 0;
 
         // Propriedade pública para a interface/bandeja consultar o estado atual
@@ -33,15 +34,16 @@ namespace SilentTrayRecorder
         {
             //configurar path
             string musicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-            string fileName = $"!gravacao_{DateTime.Now:yyyyMMdd_HHmmss}.wav";
+            string fileName = $"!gravacao_{DateTime.Now:yyyyMMdd_HHmmss}.mp3";
             string fullPath = Path.Combine(musicFolder, fileName);
 
             // Configura o gravador de áudio
             _waveIn = new WaveInEvent();
             _waveIn.WaveFormat = new WaveFormat(44100, 1); // 44.1kHz, Mono
+            _waveIn.DeviceNumber = deviceID; // Seleciona o dispositivo escolhido
 
             // Configura o escritor de arquivos para salvar a gravação
-            _writer = new WaveFileWriter(fullPath, _waveIn.WaveFormat);
+            _writer = new LameMP3FileWriter(fullPath, _waveIn.WaveFormat,LAMEPreset.ABR_128);
 
             // Vincula o recebimento de bytes ao arquivo em disco
             _waveIn.DataAvailable += (sender, eventArgs) =>
