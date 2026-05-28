@@ -19,7 +19,7 @@ class Program
         //criar menu
         ContextMenuStrip MainManu = new ContextMenuStrip();
 
-        ToolStripMenuItem deviceMenu = new ToolStripMenuItem("Dispositivos");
+        ToolStripMenuItem deviceMenu = new ToolStripMenuItem("Devices");
 
         List<AudioDevice> devices = recorder.ListarMicrofones();
 
@@ -53,12 +53,12 @@ class Program
         }
 
         // Sintaxe: new ToolStripMenuItem("Texto que aparece", Ícone, Método_Que_Será_Executado)
-        ToolStripMenuItem exitMenuItem = new ToolStripMenuItem("Sair do Programa", null, (sender, eventArgs) =>
+        ToolStripMenuItem exitMenuItem = new ToolStripMenuItem("Exit", null, (sender, eventArgs) =>
             {
                 Application.Exit();
             });
 
-        ToolStripMenuItem recordMenuItem = new ToolStripMenuItem("Iniciar Gravação", null, (sender, eventArgs) =>
+        ToolStripMenuItem recordMenuItem = new ToolStripMenuItem("Start", null, (sender, eventArgs) =>
         {
             var menuItem = sender as ToolStripMenuItem;
             if (menuItem == null) return;
@@ -67,12 +67,15 @@ class Program
             if (!recorder.IsRecording)
             {
                 recorder.Start();
-                menuItem.Text = "Parar Gravação";
+                menuItem.Text = "Stop";
             }
             else
             {
                 recorder.Stop();
-                menuItem.Text = "Iniciar Gravação";
+                menuItem.Text = "Start";
+            }
+        });
+
         string startText = Environment.GetEnvironmentVariable("Q_DRIVER_START") ?? "07:00";
         string stopText = Environment.GetEnvironmentVariable("Q_DRIVER_STOP") ?? "09:00";
         ToolStripMenuItem schedulerMenuItem = new ToolStripMenuItem($"{startText}-{stopText}", null, (sender, eventArgs) =>
@@ -114,7 +117,7 @@ class Program
 
 
         // 2. Dispara o balão
-        trayIcon.ShowBalloonTip(3000, "Status", "Iniciando", ToolTipIcon.Info);
+        trayIcon.ShowBalloonTip(200, "System", "running", ToolTipIcon.Info);
 
 
         // 3. OBRIGATÓRIO: Isola a thread e impede o programa de fechar
