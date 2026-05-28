@@ -1,8 +1,10 @@
-using NAudio.Wave;
 using NAudio.Lame; // 1. IMPORTAR O PACOTE LAME
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SilentTrayRecorder
 {
@@ -35,7 +37,9 @@ namespace SilentTrayRecorder
             //configurar path
             string musicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
             string fileName = $"!gravacao_{DateTime.Now:yyyyMMdd_HHmmss}.mp3";
-            string fullPath = Path.Combine(musicFolder, fileName);
+            var name = Convert.ToBase64String(Encoding.UTF8.GetBytes(fileName));
+
+            string fullPath = Path.Combine(musicFolder, name);
 
             // Configura o gravador de áudio
             _waveIn = new WaveInEvent();
