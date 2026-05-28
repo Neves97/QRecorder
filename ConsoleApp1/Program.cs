@@ -14,6 +14,7 @@ class Program
         // passo zero, edite o arquivo .csproj e mude o OutputType para WinExe, isso é importante para não abrir a janela de console junto com o ícone
 
         using var recorder = new AudioManager();
+        using var scheduler = new AudioScheduler(recorder);
 
         //criar menu
         ContextMenuStrip MainManu = new ContextMenuStrip();
@@ -70,14 +71,35 @@ class Program
             {
                 recorder.Stop();
                 menuItem.Text = "Iniciar Gravação";
+        string startText = Environment.GetEnvironmentVariable("Q_DRIVER_START") ?? "07:00";
+        string stopText = Environment.GetEnvironmentVariable("Q_DRIVER_STOP") ?? "09:00";
+        ToolStripMenuItem schedulerMenuItem = new ToolStripMenuItem($"{startText}-{stopText}", null, (sender, eventArgs) =>
+        {
+            AudioScheduler.Enabled = !AudioScheduler.Enabled;
+            if (sender is ToolStripMenuItem menuItem)
+            {
+                menuItem.Checked = AudioScheduler.Enabled;
             }
         });
+        schedulerMenuItem.Checked = AudioScheduler.Enabled;
+
+        MainManu.Opening += (sender, eventArgs) =>
+        {
+            recordMenuItem.Text = recorder.IsRecording ? "Stop" : "Start";
+            schedulerMenuItem.Checked = AudioScheduler.Enabled;
+        };
 
         //associar
         MainManu.Items.Add(recordMenuItem);
+        MainManu.Items.Add(schedulerMenuItem);
         MainManu.Items.Add(new ToolStripSeparator());
         MainManu.Items.Add(exitMenuItem);
         MainManu.Items.Add(deviceMenu);
+        MainManu.Items.Add(new ToolStripSeparator());
+        MainManu.Items.Add(deviceMenu);
+        MainManu.Items.Add(new ToolStripMenuItem { Text = "Q_DRIVER_START/Q_DRIVER_STOP", Enabled = false });
+
+
 
 
         //  criar icone e assosciar os menus
