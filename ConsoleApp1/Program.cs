@@ -35,8 +35,10 @@ class Program
                 {
                     item.Checked = false;
                 }
-                var clickedItem = (ToolStripMenuItem)sender; //melhorar
-                clickedItem.Checked = true;
+                if (sender is ToolStripMenuItem clickedItem)
+                {
+                    clickedItem.Checked = true;
+                }
 
 
             });
